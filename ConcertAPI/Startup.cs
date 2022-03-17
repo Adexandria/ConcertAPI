@@ -1,10 +1,13 @@
 using Concert.Domain.Entities;
 using Concert.Infrastructure.Service;
-using ConcertAPI.In_Memory;
+using IdentityServer4;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,49 +40,45 @@ namespace ConcertAPI
             string migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
             services.AddControllers();
 
-            services.AddIdentity<UserModel, IdentityRole>()
+            services.AddIdentity<UserModel, IdentityRole>(opt => opt.SignIn.RequireConfirmedEmail = true)
                  .AddEntityFrameworkStores<AuthDbService>()
                     .AddDefaultTokenProviders();
             services.AddDbContext<AuthDbService>(s => s.UseSqlServer(Configuration["ConnectionStrings:Concert"],
                 sql=>sql.MigrationsAssembly(migrationsAssembly)));
-            services.AddIdentityServer()
-                .AddTestUsers(IdentityConfiguration.TestUsers)
-                .AddConfigurationStore(options =>
-                {
-                    options.ConfigureDbContext = b => b.UseSqlServer(Configuration["ConnectionStrings:Concert"],
-                        sql => sql.MigrationsAssembly(migrationsAssembly));
-                })
-                .AddOperationalStore(options =>
-                {
-                    options.ConfigureDbContext = b => b.UseSqlServer(Configuration["ConnectionStrings:Concert"],
-                        sql => sql.MigrationsAssembly(migrationsAssembly));
-                }).AddAspNetIdentity<UserModel>();
 
-            services.AddAuthentication(options =>
+            services.AddAuthentication(options=>
             {
-                options.DefaultScheme = "Cookies";
-                options.DefaultChallengeScheme = "oidc";
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-                .AddCookie("Cookies")
-                    .AddOpenIdConnect("oidc", options =>
-                    {
-                        options.Authority = "http://localhost:13391";
+            .AddJwtBearer("Bearer", options =>
+            {
+                options.Authority = "http://localhost:34085";
+                options.RequireHttpsMetadata = false;
+                
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = false
+                };
+            });
+            services.ConfigureApplicationCookie(options =>
+            {
+                // Cookie settings
+                options.Cookie.HttpOnly = true;
+                options.Cookie.Name = "Concert API";
+                options.SlidingExpiration = true;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+                options.LoginPath = PathString.Empty;
+                options.AccessDeniedPath = PathString.Empty;
 
-                        options.ClientId = "mvc";
-                        options.ClientSecret = "secret";
-                        options.ResponseType = "code";
+            });
 
-                        options.SaveTokens = true;
-                        options.RequireHttpsMetadata = false;
-                        options.Scope.Add("api1");
-                       
-                    });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            InitializeDatabase(app);
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -87,50 +87,14 @@ namespace ConcertAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
-            app.UseIdentityServer();
-
+            app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
         }
-        private void InitializeDatabase(IApplicationBuilder app)
-        {
-            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-            {
-                serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-
-                var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-                context.Database.Migrate();
-                if (!context.Clients.Any())
-                {
-                    foreach (var client in IdentityConfiguration.Clients)
-                    {
-                        context.Clients.Add(client.ToEntity());
-                    }
-                    context.SaveChanges();
-                }
-
-                if (!context.IdentityResources.Any())
-                {
-                    foreach (var resource in IdentityConfiguration.IdentityResources)
-                    {
-                        context.IdentityResources.Add(resource.ToEntity());
-                    }
-                    context.SaveChanges();
-                }
-
-                if (!context.ApiScopes.Any())
-                {
-                    foreach (var resource in IdentityConfiguration.ApiScopes)
-                    {
-                        context.ApiScopes.Add(resource.ToEntity());
-                    }
-                    context.SaveChanges();
-                }
-            }
-        }
+       
+        
     }
 }
