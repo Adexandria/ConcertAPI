@@ -2,13 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>b6d5155b-f24d-4cf5-bb36-280b774b0462</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="IdentityModel" Version="6.0.0" />
+    <PackageReference Include="Mapster" Version="7.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.13" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.0" />
+    <PackageReference Include="RestSharp" Version="107.3.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Concert.Application\Concert.Application.csproj" />
     <ProjectReference Include="..\Concert.Domain\Concert.Domain.csproj" />
   </ItemGroup>
 

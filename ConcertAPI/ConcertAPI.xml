@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ConcertAPI</name>
+    </assembly>
+    <members>
+        <member name="M:ConcertAPI.Controllers.AccountController.SignUp(Concert.Application.DTO.SignUp)">
+            <param name="user">
+            an object to sign up a user
+            </param>
+             <summary>
+             Sign up a new user
+             </summary>
+             
+             <returns>200 response</returns>
+        </member>
+        <member name="M:ConcertAPI.Controllers.AccountController.VerifyEmailToken(Concert.Domain.Entities.Token,System.String)">
+            <param name="email">
+            \a user's email
+            </param>
+            <param name="token">
+            a token to confirm user's email
+            </param>
+             <summary>
+            email confrimation
+             </summary>
+             
+             <returns>200 response</returns>
+        </member>
+    </members>
+</doc>

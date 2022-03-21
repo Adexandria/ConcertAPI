@@ -15,29 +15,7 @@ namespace Client
             RequestTokenAsync();
         }
 
-        public static void RequestTokenAsync()
-        {
-            var client = new HttpClient();
-            var disco =  client.GetDiscoveryDocumentAsync("http://localhost:34085").Result;
-            if (disco.IsError)
-            {
-                Console.WriteLine(disco.Error);
-                return;
-            }
-            var tokenResponse = client.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
-            {
-                Address = disco.TokenEndpoint,
-
-                ClientId = "client",
-                ClientSecret = "secret",
-                Scope = "myApi.read"
-            }).Result;
-            if (tokenResponse.IsError)
-            {
-                Console.WriteLine(tokenResponse.Error);
-                return;
-            }
-            Console.WriteLine(tokenResponse.Json);
+       
             var apiClient = new HttpClient();
             apiClient.SetBearerToken(tokenResponse.AccessToken);
 

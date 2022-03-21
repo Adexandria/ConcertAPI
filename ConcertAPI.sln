@@ -11,9 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Concert.Application", "Conc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Concert.Domain", "Concert.Domain\Concert.Domain.csproj", "{78F1479A-3CB9-468D-8A3B-E54E34303EAA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer", "IdentityServer\IdentityServer.csproj", "{1E3AAA46-1679-487A-B013-C8B3BFA28052}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{2630F02A-3C70-4467-BE8E-075DC56BCB18}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityServer", "IdentityServer\IdentityServer.csproj", "{1E3AAA46-1679-487A-B013-C8B3BFA28052}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,10 +39,6 @@ Global
 		{1E3AAA46-1679-487A-B013-C8B3BFA28052}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1E3AAA46-1679-487A-B013-C8B3BFA28052}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E3AAA46-1679-487A-B013-C8B3BFA28052}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2630F02A-3C70-4467-BE8E-075DC56BCB18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2630F02A-3C70-4467-BE8E-075DC56BCB18}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2630F02A-3C70-4467-BE8E-075DC56BCB18}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2630F02A-3C70-4467-BE8E-075DC56BCB18}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
