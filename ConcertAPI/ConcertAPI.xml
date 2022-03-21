@@ -16,13 +16,30 @@
         </member>
         <member name="M:ConcertAPI.Controllers.AccountController.VerifyEmailToken(Concert.Domain.Entities.Token,System.String)">
             <param name="email">
-            \a user's email
+            a user's email
             </param>
             <param name="token">
             a token to confirm user's email
             </param>
              <summary>
             email confrimation
+             </summary>
+             
+             <returns>200 response</returns>
+        </member>
+        <member name="M:ConcertAPI.Controllers.AccountController.Login(Concert.Application.DTO.Login)">
+            <param name="user">
+            an object to login
+            </param>
+             <summary>
+            Login User
+             </summary>
+             
+             <returns>200 response</returns>
+        </member>
+        <member name="M:ConcertAPI.Controllers.AccountController.SignOut">
+             <summary>
+            sign out current user
              </summary>
              
              <returns>200 response</returns>
