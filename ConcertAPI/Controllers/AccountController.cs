@@ -2,6 +2,7 @@
 using Concert.Domain.Entities;
 using Concert.Infrastructure.Service;
 using Mapster;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -132,6 +133,77 @@ namespace ConcertAPI.Controllers
                 return BadRequest(e.Message);
             }
 
+        }
+
+        ///<param name="user">
+        ///an object to login
+        ///</param>
+        /// <summary>
+        ///Login User
+        /// </summary>
+        /// 
+        /// <returns>200 response</returns>
+
+        //To generate the token to reset password
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [HttpPost("login")]
+        public async Task<ActionResult> Login(Login user)
+        {
+            try
+            {
+                UserModel currentUser = await userManager.FindByEmailAsync(user.Email);
+                if (currentUser == null)
+                {
+                    return NotFound("username or password is not correct");
+                }
+
+                //This verfies the user password by using IPasswordHasher interface
+                PasswordVerificationResult passwordVerifyResult = passwordHasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, user.Password);
+                if (passwordVerifyResult.ToString() == "Success")
+                {
+                    var claims = await userManager.GetClaimsAsync(currentUser);
+                    var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme);
+                    this.User.AddIdentity(identity);
+                    await signInManager.SignInWithClaimsAsync(currentUser, null, claims);
+
+                    return Ok();
+                }
+
+                return BadRequest("username or password is not correct");
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+
+        }
+
+        /// <summary>
+        ///sign out current user
+        /// </summary>
+        /// 
+        /// <returns>200 response</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Produces("application/json")]
+        [HttpPost("signout")]
+        public async Task<ActionResult> SignOut()
+        {
+            try
+            {
+                await signInManager.SignOutAsync();
+                return Ok("Signed out");
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
         }
 
     }
