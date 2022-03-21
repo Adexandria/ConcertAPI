@@ -1,25 +1,23 @@
-﻿using IdentityModel.Client;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+﻿using Concert.Infrastructure.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace ConcertAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/AccessToken")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class IdentityController : ControllerBase
     {
-        [HttpGet]
-        public IActionResult Get()
+        private readonly Client client;
+        public IdentityController(Client client)
         {
-            return new JsonResult(from c in User.Claims select new { c.Type, c.Value });
+            this.client = client;
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAccessToke()
+        {
+            return Ok(await client.RequestTokenAsync());
         }
     }
 }
