@@ -73,7 +73,6 @@ namespace ConcertAPI
             {
                 // Cookie settings
                 options.Cookie.HttpOnly = true;
-                options.Cookie.Name = "Concert API";
                 options.SlidingExpiration = true;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
                 options.LoginPath = PathString.Empty;
