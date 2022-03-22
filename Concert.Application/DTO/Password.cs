@@ -8,7 +8,7 @@ namespace Concert.Application.DTO
     public class Password
     {
         [Required]
-        public string OldPassword { get; set; }
+        public string CurrentPassword { get; set; }
         [Required]
         public string NewPassword { get; set; }
         [Required]
