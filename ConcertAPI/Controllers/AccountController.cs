@@ -76,10 +76,9 @@ namespace ConcertAPI.Controllers
                         await emailService.SendSimpleMessage(mail);
                         return this.StatusCode(StatusCodes.Status201Created, $"Welcome,{newUser.UserName} Check your mail to verify your account");
                     }
-                    else
-                    {
-                        return BadRequest(identity.Errors);
-                    }
+
+                    return BadRequest(identity.Errors);
+                    
                 }
                 return this.StatusCode(StatusCodes.Status400BadRequest, "Password not equal,retype password");
             }
@@ -117,15 +116,15 @@ namespace ConcertAPI.Controllers
                 {
                     return NotFound("email doesn't exist");
                 }
+
                 IdentityResult result = await userManager.ConfirmEmailAsync(currentUser, token.GeneratedToken);
                 if (result.Succeeded)
                 {
                     return this.StatusCode(StatusCodes.Status200OK, $"Welcome,{currentUser.UserName} Email has been verified");
                 }
-                else
-                {
-                    return this.StatusCode(StatusCodes.Status400BadRequest, "Invalid Token");
-                }
+
+                return this.StatusCode(StatusCodes.Status400BadRequest, "Invalid Token");
+                
             }
             catch (Exception e)
             {
@@ -183,6 +182,92 @@ namespace ConcertAPI.Controllers
 
         }
 
+        ///<param name="userName">
+        ///\a user's username
+        ///</param>
+        /// <summary>
+        ///reset password
+        /// </summary>
+        /// 
+        /// <returns>A string status</returns>
+
+        //To generate the token to reset password
+        [HttpGet("password")]
+        public async Task<ActionResult> ForgotPassword(string userName)
+        {
+            try
+            {
+                var currentUser = await userManager.FindByNameAsync(userName);
+                if (currentUser == null)
+                {
+                    return NotFound("username doesn't exist");
+                }
+                var passwordResetToken = await userManager.GeneratePasswordResetTokenAsync(currentUser);
+                Mail mail = new Mail
+                {
+                    Subject = "Reset Password",
+                    To = currentUser.Email,
+                    Text = passwordResetToken
+
+                };
+                await emailService.SendSimpleMessage(mail);
+                return Ok("Successful, check mail");
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+
+        }
+
+        ///<param name="userName">
+        ///\a user's username
+        ///</param>
+        ///<param name="password">
+        ///an object to reset a password
+        ///</param>
+        /// <summary>
+        ///verify token/reset password confirmation
+        /// </summary>
+        /// 
+        /// <returns>A string status</returns>
+        //To verify the Password reset token
+        //which gives access to change the user's password
+        [HttpPost("password/verifytoken")]
+        public async Task<ActionResult> VerifyPasswordToken([FromBody] Password password, string userName)
+        {
+            try
+            {
+                var currentUser = await userManager.FindByNameAsync(userName);
+                if (currentUser == null)
+                {
+                    return NotFound("username doesn't exist");
+                }
+                var isVerify = passwordHasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, password.OldPassword);
+                if (isVerify.ToString() == "Success")
+                {
+                    if (password.NewPassword.Equals(password.RetypePassword))
+                    {
+                        var isVerifyResult = await userManager.ResetPasswordAsync(currentUser, password.Token, password.NewPassword);
+                        if (isVerifyResult.Succeeded)
+                        {
+                            return Ok("Password changed");
+                        }
+                        return BadRequest(isVerifyResult.Errors);
+                    }
+                    return BadRequest("Password not equal");
+                }
+                return BadRequest("Old password is incorrect");
+
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+
+        }
         /// <summary>
         ///sign out current user
         /// </summary>
