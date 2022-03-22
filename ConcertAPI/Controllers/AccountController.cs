@@ -1,4 +1,5 @@
 ﻿using Concert.Application.DTO;
+using Concert.Application.Interface;
 using Concert.Domain.Entities;
 using Concert.Infrastructure.Service;
 using Mapster;
@@ -23,12 +24,13 @@ namespace ConcertAPI.Controllers
         readonly MappingConfig config;
         readonly IdentityServices identityServices;
         readonly EmailService emailService;
-        
+        readonly Client client;
+        readonly IAuth auth;
 
 
         public AccountController(SignInManager<UserModel> signInManager, UserManager<UserModel> userManager,
             MappingConfig config, IPasswordHasher<UserModel> passwordHasher,
-            IdentityServices identityServices, EmailService emailService)
+            IdentityServices identityServices, EmailService emailService, Client client, IAuth auth)
         {
            this.config = config;
             this.userManager = userManager;
@@ -36,6 +38,8 @@ namespace ConcertAPI.Controllers
             this.signInManager = signInManager;
             this.identityServices = identityServices;
             this.emailService = emailService;
+            this.client = client;
+            this.auth = auth;
         }
 
 
@@ -162,6 +166,11 @@ namespace ConcertAPI.Controllers
 
                 //This verfies the user password by using IPasswordHasher interface
                 PasswordVerificationResult passwordVerifyResult = passwordHasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, user.Password);
+                bool isEnabled = await userManager.GetTwoFactorEnabledAsync(currentUser);
+                if (isEnabled)
+                {
+                    return this.StatusCode(StatusCodes.Status102Processing, "Enter Google Code");
+                }
                 if (passwordVerifyResult.ToString() == "Success")
                 {
                     var claims = await userManager.GetClaimsAsync(currentUser);
@@ -169,7 +178,7 @@ namespace ConcertAPI.Controllers
                     this.User.AddIdentity(identity);
                     await signInManager.SignInWithClaimsAsync(currentUser, null, claims);
 
-                    return Ok();
+                    return Ok(await client.RequestTokenAsync());
                 }
 
                 return BadRequest("username or password is not correct");
@@ -181,7 +190,41 @@ namespace ConcertAPI.Controllers
             }
 
         }
+        ///<param name="userName">
+        /// user's username
+        ///</param>
+        ///<param name="key">
+        ///Google verification Key
+        ///</param>
+        /// <summary>
+        /// Enabled Two authentication
+        /// </summary>
+        /// 
+        /// <returns>A string status</returns>
+        [HttpPost("{userName}/Authentication/{key}")]
+        public async Task<ActionResult> AuthenticationKeyVerification(string userName, string key)
+        {
+            try
+            {
+                var currentUser = await userManager.FindByNameAsync(userName);
+                if (currentUser == null)
+                {
+                    return NotFound("username doesn't exist");
+                }
+                if (auth.KeyVerification(currentUser.Email, key))
+                {
+                    await userManager.SetTwoFactorEnabledAsync(currentUser, true);
+                    return Ok(await client.RequestTokenAsync());
+                }
+                return BadRequest("Invalid Key, Try Again");
 
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+        }
         ///<param name="userName">
         ///\a user's username
         ///</param>
@@ -244,7 +287,7 @@ namespace ConcertAPI.Controllers
                 {
                     return NotFound("username doesn't exist");
                 }
-                var isVerify = passwordHasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, password.OldPassword);
+                var isVerify = passwordHasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, password.CurrentPassword);
                 if (isVerify.ToString() == "Success")
                 {
                     if (password.NewPassword.Equals(password.RetypePassword))
