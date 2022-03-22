@@ -1,3 +1,4 @@
+using Concert.Application.Interface;
 using Concert.Domain.Entities;
 using Concert.Infrastructure.Service;
 using IdentityServer4;
@@ -52,6 +53,7 @@ namespace ConcertAPI
             services.AddSingleton<MappingConfig>();
             services.AddScoped<IdentityServices>();
             services.AddScoped<EmailService>();
+            services.AddScoped<IAuth, TwoFactorAuthService>();
 
             services.AddAuthentication(options=>
             {
