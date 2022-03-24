@@ -37,6 +37,19 @@
              
              <returns>200 response</returns>
         </member>
+        <member name="M:ConcertAPI.Controllers.AccountController.AuthenticationKeyVerification(System.String,System.String)">
+            <param name="userName">
+             user's username
+            </param>
+            <param name="key">
+            Google verification Key
+            </param>
+             <summary>
+             Enabled Two authentication
+             </summary>
+             
+             <returns>A string status</returns>
+        </member>
         <member name="M:ConcertAPI.Controllers.AccountController.ForgotPassword(System.String)">
             <param name="userName">
             \a user's username
