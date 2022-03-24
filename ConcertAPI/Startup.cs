@@ -49,6 +49,10 @@ namespace ConcertAPI
             services.AddDbContext<AuthDbService>(s => s.UseSqlServer(Configuration["ConnectionStrings:Concert"],
                 sql=>sql.MigrationsAssembly(migrationsAssembly)));
 
+            services.AddDbContext<DbService>(
+                opt=>opt.UseSqlServer(Configuration["ConnectionStrings:ConcertDb"],
+                sql=>sql.MigrationsAssembly(migrationsAssembly)).EnableSensitiveDataLogging());
+
             services.AddScoped<Client>();
             services.AddSingleton<MappingConfig>();
             services.AddScoped<IdentityServices>();
