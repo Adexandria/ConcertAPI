@@ -213,7 +213,6 @@ namespace ConcertAPI.Controllers
                 }
                 if (auth.KeyVerification(currentUser.Email, key))
                 {
-                    await userManager.SetTwoFactorEnabledAsync(currentUser, true);
                     return Ok(await client.RequestTokenAsync());
                 }
                 return BadRequest("Invalid Key, Try Again");
