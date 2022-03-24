@@ -7,11 +7,6 @@ namespace Concert.Infrastructure.Service
 {
     public class Client
     {
-        public Client(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-        private readonly IConfiguration Configuration;
 
         public async Task<string> RequestTokenAsync()
         {
