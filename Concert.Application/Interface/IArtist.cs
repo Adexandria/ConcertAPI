@@ -12,8 +12,6 @@ namespace Concert.Application.Interface
         Task AddArtist(Artist artist);
         Task<Artist> UpdateArtist(Artist artist);
         Task DeleteArtist(Artist artist);
-    
-
 
 
         //Concert Artist
