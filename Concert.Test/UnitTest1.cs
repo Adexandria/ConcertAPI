@@ -23,28 +23,23 @@ namespace Concert.Test
         [Fact]
         public void AddConcert_Test()
         {
-            Guid concertId = Guid.Parse("9acd1b77-9d79-4e88-8ed4-380aeec79be4");
-            Guid concertId1 = Guid.Parse("2723403d-e078-44f5-87a4-1815c4f4d600");
             ConcertModel concert = new ConcertModel
             {
-                Address= "Place",
-                ConcertId = concertId,
+                Address = "Place",
                 Description = "another place",
                 Name = "Adefest"
             };
-
             ConcertModel concert1 = new ConcertModel
             {
                 Address = "Place",
-                ConcertId = concertId1,
                 Description = "another place",
                 Name = "Adefest"
             };
-            _concert.AddConcert(concert);
             _concert.AddConcert(concert1);
-            ConcertModel currentConcert = _concert.GetConcertById(concertId).Result;
-            Assert.Equal(currentConcert, concert);
+            int result = _concert.AddConcert(concert);
+            Assert.Equal(1, result);
         }
+            
 
         [Fact]
         public void GetConcerts_Test()
@@ -52,6 +47,7 @@ namespace Concert.Test
             IEnumerable<ConcertModel> concerts = _concert.GetConcerts;
             Assert.NotNull(concerts);
         }
+
         [Fact]
         public void GetConcertByName_Test()
         {
@@ -59,21 +55,19 @@ namespace Concert.Test
             Assert.NotNull(concerts);
         }
 
-        /*[Fact]
+        [Fact]
         public void DeleteConcert_Test()
         {
-            Guid concertId = Guid.Parse("2723403d-e078-44f5-87a4-1815c4f4d600");
-            ConcertModel currentConcert = _concert.GetConcertById(concertId).Result;
-            _concert.DeleteConcert(currentConcert);
-            ConcertModel concert = _concert.GetConcertById(concertId).Result;
-            Assert.Null(concert);
+            Guid concertId = Guid.Parse("814d3792-b9b8-49ba-bef4-1e9754813d7d");
+            int result = _concert.DeleteConcert(concertId);
+            Assert.Equal(1, result);
 
-        }*/
+        }
        
-        /*[Fact]
+        [Fact]
         public void UpdateConcert_Test()
         {
-            Guid concertId = Guid.Parse("9acd1b77-9d79-4e88-8ed4-380aeec79be4");
+            Guid concertId = Guid.Parse("9c0deee5-4674-4560-ac4f-2121d32c9ad7");
             ConcertModel concert = new ConcertModel
             {
                 Address = "Places",
@@ -82,8 +76,11 @@ namespace Concert.Test
                 Name = "Adefest"
             };
             ConcertModel currentModel = _concert.UpdateConcert(concert).Result;
-            Assert.Equal(currentModel, concert);
+            Assert.Equal(currentModel.Address, concert.Address);
+            Assert.Equal(currentModel.ConcertId, concert.ConcertId);
+            Assert.Equal(currentModel.Description, concert.Description);
+            Assert.Equal(currentModel.Name, concert.Name);
 
-        }*/
+        }
     }
 }
