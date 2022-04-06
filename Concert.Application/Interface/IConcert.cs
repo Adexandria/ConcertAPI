@@ -12,9 +12,9 @@ namespace Concert.Application.Interface
         IEnumerable<ConcertModel> GetConcerts { get; }
         IEnumerable<ConcertModel> GetConcertsbyName(string name);
         Task<ConcertModel> GetConcertById(Guid id);
-        void AddConcert(ConcertModel concert);
+        int AddConcert(ConcertModel concert);
         Task<ConcertModel> UpdateConcert(ConcertModel concert);
-        void DeleteConcert(ConcertModel concert);
+        int DeleteConcert(Guid id);
 
 
 
