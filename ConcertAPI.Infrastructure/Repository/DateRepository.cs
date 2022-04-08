@@ -20,7 +20,7 @@ namespace Concert.Infrastructure.Repository
         }
         public IEnumerable<ConcertDate> GetConcertByDate(DateTime date)
         {
-            return _db.ConcertDate.FromSqlRaw("SELECT * FROM dbo.ConcertDate").Where(s => s.DateTime.Date== date.Date)
+            return _db.ConcertDate.FromSqlRaw("SELECT * FROM dbo.ConcertDate").Where(s => s.DateTime.Date== date.Date).Include(s => s.Concert)
                  .AsNoTracking().OrderBy(s => s.ConcertId);
         }
         public int AddConcertDate(ConcertDate date)
@@ -64,7 +64,7 @@ namespace Concert.Infrastructure.Repository
             }
             //copies updated properties from date to currentDate
             _db.Entry(currentDate).CurrentValues.SetValues(date);
-            string commandText = "UPDATE ConcertDate SET DateId = @DateId,DateTime = @DateTime WHERE ConcertId = @ConcertId";
+            string commandText = "UPDATE ConcertDate SET DateTime = @DateTime WHERE ConcertId = @ConcertId,DateId = @DateId";
 
             List<SqlParameter> sqlParameters = GetSqlParameters(currentDate);
             _db.Database.ExecuteSqlRaw(commandText, sqlParameters);
@@ -77,7 +77,7 @@ namespace Concert.Infrastructure.Repository
 
         private async Task<ConcertDate> GetDateById(Guid dateId)
         {
-            return await _db.ConcertDate.FromSqlInterpolated($"Select * From dbo.ConcertDate Where DateId = {dateId}").AsNoTracking().FirstOrDefaultAsync();
+            return await _db.ConcertDate.FromSqlInterpolated($"Select * From dbo.ConcertDate Where DateId = {dateId}").Include(s=>s.Concert).AsNoTracking().FirstOrDefaultAsync();
         }
 
         private void Save()
