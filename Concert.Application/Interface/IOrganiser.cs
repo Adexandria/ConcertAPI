@@ -9,17 +9,17 @@ namespace Concert.Application.Interface
     public interface IOrganiser
     {
         //Organiser
-        Task AddOrganiser(Organiser organiser);
+        int AddOrganiser(Organiser organiser);
         Task<Organiser> UpdateOrganiser(Organiser organiser);
-        Task DeleteOrganiser(Organiser organiser);
+        int DeleteOrganiser(Guid organiserId);
 
 
         //Concert Organiser
         IEnumerable<ConcertOrganiser> GetConcertOrganisers { get; }
         IEnumerable<ConcertOrganiser> GetOrganiserByName(string name);
         IEnumerable<ConcertOrganiser> GetOrganiserByConcert(string name);
-        Task AddConcertOrganiser(ConcertOrganiser organiser);
+        int AddConcertOrganiser(ConcertOrganiser organiser);
         Task<ConcertOrganiser> UpdateConcertOrganiser(ConcertOrganiser organiser);
-        Task DeleteConcertOrganiser(ConcertOrganiser organiser);
+        int DeleteConcertOrganiser(Guid concertOrganiserId);
     }
 }
