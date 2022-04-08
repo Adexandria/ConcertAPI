@@ -10,8 +10,8 @@ namespace Concert.Application.Interface
    {
         //Concert Date
         IEnumerable<ConcertDate> GetConcertByDate(DateTime date);
-        Task AddConcertDate(ConcertDate date);
+        int AddConcertDate(ConcertDate date);
         Task<ConcertDate> UpdateConcertDate(ConcertDate date);
-        Task DeleteConcertDate(ConcertDate date);
+        int DeleteConcertDate(Guid id);
     }
 }

@@ -1,5 +1,6 @@
 using Concert.Application.Interface;
 using Concert.Domain.Entities;
+using Concert.Infrastructure.Repository;
 using Concert.Infrastructure.Service;
 using IdentityServer4;
 using IdentityServer4.EntityFramework.DbContexts;
@@ -58,7 +59,7 @@ namespace ConcertAPI
             services.AddScoped<IdentityServices>();
             services.AddScoped<EmailService>();
             services.AddScoped<IAuth, TwoFactorAuthService>();
-
+            services.AddScoped<IConcert, ConcertRepository>();
             services.AddAuthentication(options=>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

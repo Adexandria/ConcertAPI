@@ -9,18 +9,16 @@ namespace Concert.Application.Interface
     public interface IArtist
     {
         //Artist
-        Task AddArtist(Artist artist);
+        int AddArtist(Artist artist);
         Task<Artist> UpdateArtist(Artist artist);
-        Task DeleteArtist(Artist artist);
-    
-
+        int DeleteArtist(Guid artistId);
 
 
         //Concert Artist
         IEnumerable<ConcertArtist> GetConcertArtists { get; }
         IEnumerable<ConcertArtist> GetArtistByName(string name);
-        Task AddConcertArtist(ConcertArtist artist);
-        Task<ConcertArtist> UpdateConcertArtist(ConcertArtist artists);
-        Task DeleteConcertArtist(ConcertArtist artists);
+        int AddConcertArtist(ConcertArtist artist);
+        Task<ConcertArtist> UpdateConcertArtist(ConcertArtist artist);
+        int DeleteConcertArtist(Guid concertArtistId);
     }
 }
