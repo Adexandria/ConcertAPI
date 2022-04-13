@@ -32,7 +32,8 @@ namespace Concert.Infrastructure.Repository
             {
                 throw new NullReferenceException(nameof(name));
             }
-            Guid artistId = _db.Artists.FromSqlInterpolated($"Select * From dbo.Artists Where Name = {name}").Select(s=>s.ArtistId).FirstOrDefault();
+            Guid artistId = _db.Artists.FromSqlInterpolated($"Select * From dbo.Artists Name ={name}").Select(s => s.ArtistId).FirstOrDefault();
+
             return _db.ConcertArtists.FromSqlInterpolated($"Select * From dbo.ConcertArtists Where ArtistId = {artistId}");
         }
         public int AddConcertArtist(ConcertArtist artist)
@@ -145,8 +146,16 @@ namespace Concert.Infrastructure.Repository
             Save();
             return noOfRowDeleted;
         }
+        //search by artist name
+        public async Task<Artist> GetArtist(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new NullReferenceException(name);
+            }
+           return await _db.Artists.FromSqlRaw("Select * From dbo.Artists").Where(s=>s.Name.Contains(name)).OrderBy(s=>s.ArtistId).FirstOrDefaultAsync();
+        }
 
-        
         private async Task<Artist> GetArtistById(Guid artistId)
         {
             return await _db.Artists.FromSqlInterpolated($"Select * From dbo.ConcertArtists Where Name = {artistId}").FirstOrDefaultAsync();
@@ -188,5 +197,7 @@ namespace Concert.Infrastructure.Repository
             };
             return sqlParameters;
         }
+
+        
     }
 }
