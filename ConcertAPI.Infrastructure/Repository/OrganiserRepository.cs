@@ -19,6 +19,7 @@ namespace Concert.Infrastructure.Repository
             this._db = _db;
         }
 
+
         //Concert Organiser
         public IEnumerable<ConcertOrganiser> GetConcertOrganisers
         {
@@ -28,6 +29,7 @@ namespace Concert.Infrastructure.Repository
                    .AsNoTracking().OrderBy(s => s.ConcertId);
             }
         }
+
         public IEnumerable<ConcertOrganiser> GetOrganiserByName(string name)
         {
             Guid organiserId =  _db.Organiser.FromSqlRaw("SELECT * FROM dbo.Organiser")
@@ -47,6 +49,7 @@ namespace Concert.Infrastructure.Repository
                   .Include(s => s.Organiser).Include(s => s.Concert).AsNoTracking().OrderBy(s => s.ConcertId);
 
         }
+
         public int AddConcertOrganiser(ConcertOrganiser organiser)
         {
             if(organiser == null)
@@ -55,7 +58,7 @@ namespace Concert.Infrastructure.Repository
             }
             organiser.ConcertOrganiserId = Guid.NewGuid();
             //Raw sql command to insert concertOrganiser into the table
-            string commandText = "INSERT ConcertOrganiser (ConcertOrganiserId,ConcertId,OrganiserId) VALUES (@ConcertOrganiser,@ConcertId,@OrganiserId)";
+            string commandText = "INSERT ConcertOrganiser (ConcertOrganiserId,ConcertId,OrganiserId) VALUES (@ConcertOrganiserId,@ConcertId,@OrganiserId)";
 
             List<SqlParameter> sqlParameters = GetConcertOrganiserSqlParameters(organiser);
             IEnumerable<object> parameters = sqlParameters;
@@ -65,8 +68,6 @@ namespace Concert.Infrastructure.Repository
             return noOfRowInserted;
         }
         
-
-      
         public  async Task<ConcertOrganiser> UpdateConcertOrganiser(ConcertOrganiser organiser)
         {
             if (organiser == null)
@@ -98,25 +99,84 @@ namespace Concert.Infrastructure.Repository
         }
 
 
-        public int AddOrganiser(Organiser organiser)
+
+        //Organiser
+
+        public async Task<Organiser> GetOrganiser(string name)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new NullReferenceException(name);
+            }
+            return await _db.Organiser.FromSqlRaw("Select * From dbo.Organiser").Where(s => s.Name.Contains(name)).OrderBy(s => s.OrganiserId).FirstOrDefaultAsync();
         }
 
-       
+        public int AddOrganiser(Organiser organiser)
+        {
+
+            if (organiser == null)
+            {
+                throw new NullReferenceException(nameof(organiser));
+            }
+            organiser.OrganiserId = Guid.NewGuid();
+            //Raw sql command to insert concertOrganiser into the table
+            string commandText = "INSERT Organiser (Name,Email,OrganiserId) VALUES (@Name,@Email,@OrganiserId)";
+
+            List<SqlParameter> sqlParameters = GetOrganiserSqlParameters(organiser);
+            IEnumerable<object> parameters = sqlParameters;
+
+            int noOfRowInserted = _db.Database.ExecuteSqlRaw(commandText, parameters);
+            Save();
+            return noOfRowInserted;
+        }
+
+        public async Task<Organiser> UpdateOrganiser(Organiser organiser)
+        {
+            if (organiser == null)
+            {
+                throw new NullReferenceException(nameof(organiser));
+            }
+            Organiser currentOrganiser = await GetOrganiserById(organiser.OrganiserId);
+            _db.Entry(currentOrganiser).CurrentValues.SetValues(organiser);
+            string commandText = "UPDATE Organiser SET Name = @Name, Email= @Email WHERE OrganiserId = @OragniserId";
+
+            List<SqlParameter> sqlParameters = GetOrganiserSqlParameters(currentOrganiser);
+            _db.Database.ExecuteSqlRaw(commandText, sqlParameters);
+            Save();
+
+            Organiser updatedOrganiser = await GetOrganiserById(currentOrganiser.OrganiserId);
+            return updatedOrganiser;
+        }
 
         public int DeleteOrganiser(Guid organiserId)
         {
-            throw new NotImplementedException();
+            if (organiserId == null)
+            {
+                throw new NullReferenceException(nameof(organiserId));
+            }
+            //Delete organiser by id and return 1(true) or 0(false)
+            int noOfRowDeleted = _db.Database.ExecuteSqlInterpolated($"Delete from Organiser where OrganiserId ={organiserId}");
+            Save();
+            return noOfRowDeleted;
         }
+
 
        
 
-        public Task<Organiser> UpdateOrganiser(Organiser organiser)
-        {
-            throw new NotImplementedException();
-        }
 
+
+
+
+
+        private async Task<Organiser> GetOrganiserById(Guid organiserId)
+        {
+            if (organiserId == null)
+            {
+                throw new NullReferenceException(nameof(organiserId));
+            }
+            return await _db.Organiser.FromSqlInterpolated($"Select * from Organiser where OrganiserId ={organiserId}").FirstOrDefaultAsync();
+            
+        }
 
         private void Save()
         {
@@ -149,10 +209,12 @@ namespace Concert.Infrastructure.Repository
             {
                 email,
                 name,
-                organiserId,
+                organiserId
 
             };
             return sqlParameters;
         }
+
+       
     }
 }
