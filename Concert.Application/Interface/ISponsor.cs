@@ -9,9 +9,10 @@ namespace Concert.Application.Interface
     public interface ISponsor
     {
         //Sponsors
-        Task AddSponsor(Sponsor sponsor);
+        Task<Sponsor> GetSponsor(string name);
+        int AddSponsor(Sponsor sponsor);
         Task<Sponsor> UpdateSponsor(Sponsor sponsor);
-        Task DeleteSponsor(Sponsor sponsor);
+        int DeleteSponsor(Guid id);
 
 
 
@@ -19,8 +20,8 @@ namespace Concert.Application.Interface
         //Concert Sponsors
         IEnumerable<ConcertSponsor> GetConcertSponsors { get; }
         IEnumerable<ConcertSponsor> GetSponsorByName(string name);
-        Task AddConcertSponsor(ConcertSponsor sponsor);
+        int AddConcertSponsor(ConcertSponsor sponsor);
         Task<ConcertSponsor> UpdateConcertSponsor(ConcertSponsor sponsor);
-        Task DeleteConcertSponsor(ConcertSponsor sponsor);
+        int DeleteConcertSponsor(Guid id);
     }
 }
