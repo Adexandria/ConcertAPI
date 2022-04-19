@@ -76,7 +76,7 @@ namespace Concert.Infrastructure.Repository
             }
             ConcertOrganiser concertOrganiser = await GetConcertOrganiserById(organiser.ConcertOrganiserId);
             _db.Entry(concertOrganiser).CurrentValues.SetValues(organiser);
-            string commandText = "UPDATE ConcertOrganiser SET OrganiserId = @OragniserId,ConcertId = @ConcertId WHERE @ConcertOrganiserId = ConcertOrganiserId";
+            string commandText = "UPDATE ConcertOrganiser SET OrganiserId = @OrganiserId,ConcertId = @ConcertId WHERE @ConcertOrganiserId = ConcertOrganiserId";
 
             List<SqlParameter> sqlParameters = GetConcertOrganiserSqlParameters(concertOrganiser);
             _db.Database.ExecuteSqlRaw(commandText, sqlParameters);
@@ -102,13 +102,13 @@ namespace Concert.Infrastructure.Repository
 
         //Organiser
 
-        public async Task<Organiser> GetOrganiser(string name)
+        public IEnumerable<Organiser> GetOrganiser(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new NullReferenceException(name);
             }
-            return await _db.Organiser.FromSqlRaw("Select * From dbo.Organiser").Where(s => s.Name.Contains(name)).OrderBy(s => s.OrganiserId).FirstOrDefaultAsync();
+            return _db.Organiser.FromSqlRaw("Select * From dbo.Organiser").Where(s => s.Name.Contains(name)).OrderBy(s => s.OrganiserId).AsNoTracking();
         }
 
         public int AddOrganiser(Organiser organiser)
@@ -138,7 +138,7 @@ namespace Concert.Infrastructure.Repository
             }
             Organiser currentOrganiser = await GetOrganiserById(organiser.OrganiserId);
             _db.Entry(currentOrganiser).CurrentValues.SetValues(organiser);
-            string commandText = "UPDATE Organiser SET Name = @Name, Email= @Email WHERE OrganiserId = @OragniserId";
+            string commandText = "UPDATE Organiser SET Name = @Name, Email= @Email WHERE OrganiserId = @OrganiserId";
 
             List<SqlParameter> sqlParameters = GetOrganiserSqlParameters(currentOrganiser);
             _db.Database.ExecuteSqlRaw(commandText, sqlParameters);
@@ -174,7 +174,7 @@ namespace Concert.Infrastructure.Repository
             {
                 throw new NullReferenceException(nameof(organiserId));
             }
-            return await _db.Organiser.FromSqlInterpolated($"Select * from Organiser where OrganiserId ={organiserId}").FirstOrDefaultAsync();
+            return await _db.Organiser.FromSqlInterpolated($"Select * from Organiser where OrganiserId ={organiserId}").AsNoTracking().FirstOrDefaultAsync();
             
         }
 
@@ -184,7 +184,7 @@ namespace Concert.Infrastructure.Repository
         }
         private async Task<ConcertOrganiser> GetConcertOrganiserById(Guid concertOrganiserId)
         {
-            return await _db.ConcertOrganiser.FromSqlInterpolated($"Select * From dbo.ConcertOrganiser Where ConcertOragniserId = {concertOrganiserId}").FirstOrDefaultAsync();
+            return await _db.ConcertOrganiser.FromSqlInterpolated($"Select * From dbo.ConcertOrganiser Where ConcertOrganiserId = {concertOrganiserId}").AsNoTracking().FirstOrDefaultAsync();
         }
         private List<SqlParameter> GetConcertOrganiserSqlParameters(ConcertOrganiser organiser)
         {
