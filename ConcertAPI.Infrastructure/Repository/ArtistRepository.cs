@@ -32,9 +32,9 @@ namespace Concert.Infrastructure.Repository
             {
                 throw new NullReferenceException(nameof(name));
             }
-            Guid artistId = _db.Artists.FromSqlInterpolated($"Select * From dbo.Artists Name ={name}").Select(s => s.ArtistId).FirstOrDefault();
+            Guid artistId = _db.Artists.FromSqlInterpolated($"Select * From dbo.Artists Where Name = {name}").Select(s => s.ArtistId).FirstOrDefault();
 
-            return _db.ConcertArtists.FromSqlInterpolated($"Select * From dbo.ConcertArtists Where ArtistId = {artistId}");
+            return _db.ConcertArtists.FromSqlInterpolated($"Select * From dbo.ConcertArtists Where ArtistId = {artistId}").Include(s=>s.Artist).Include(s=>s.Concert);
         }
         public int AddConcertArtist(ConcertArtist artist)
         {
@@ -125,7 +125,7 @@ namespace Concert.Infrastructure.Repository
             }
             //copies updated properties from artist to currentArtist
             _db.Entry(currentArtist).CurrentValues.SetValues(artist);
-            string commandText = "UPDATE Artists SET Name = @Name,Bio= @Bio WHERE @ ArtistId = @ArtistId";
+            string commandText = "UPDATE Artists SET Name = @Name,Bio= @Bio WHERE ArtistId = @ArtistId";
 
             List<SqlParameter> sqlParameters = GetArtistSqlParameters(currentArtist);
             _db.Database.ExecuteSqlRaw(commandText, sqlParameters);
@@ -142,30 +142,30 @@ namespace Concert.Infrastructure.Repository
                 throw new NullReferenceException(nameof(artistId));
             }
             //Delete Artist by artistid and return 1(true) or 0(false)
-            int noOfRowDeleted = _db.Database.ExecuteSqlInterpolated($"Delete from Artists where DateId ={artistId}");
+            int noOfRowDeleted = _db.Database.ExecuteSqlInterpolated($"Delete from Artists where ArtistId ={artistId}");
             Save();
             return noOfRowDeleted;
         }
         //search by artist name
-        public async Task<Artist> GetArtist(string name)
+        public IEnumerable<Artist> GetArtist(string name)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new NullReferenceException(name);
             }
-           return await _db.Artists.FromSqlRaw("Select * From dbo.Artists").Where(s=>s.Name.Contains(name)).OrderBy(s=>s.ArtistId).FirstOrDefaultAsync();
+            return  _db.Artists.FromSqlRaw("Select * From dbo.Artists").Where(s => s.Name.Contains(name)).OrderBy(s => s.ArtistId).AsNoTracking();
         }
 
         private async Task<Artist> GetArtistById(Guid artistId)
         {
-            return await _db.Artists.FromSqlInterpolated($"Select * From dbo.ConcertArtists Where Name = {artistId}").FirstOrDefaultAsync();
+            return await _db.Artists.FromSqlInterpolated($"Select * From dbo.Artists Where ArtistId = {artistId}").AsNoTracking().FirstOrDefaultAsync();
 
         }
 
 
         private async Task<ConcertArtist> GetConcertArtistById(Guid concertArtistId)
         {
-            return await _db.ConcertArtists.FromSqlInterpolated($"Select * From dbo.ConcertArtists Where Name = {concertArtistId}").FirstOrDefaultAsync();
+            return await _db.ConcertArtists.FromSqlInterpolated($"Select * From dbo.ConcertArtists Where ConcertArtistId = {concertArtistId}").FirstOrDefaultAsync();
         }
         private void Save()
         {
