@@ -14,9 +14,11 @@ namespace Concert.Infrastructure.Repository
     public class SponsorRepository :ISponsor
     {
         readonly DbService _db;
-        public SponsorRepository(DbService _db)
+        readonly ConcurrencyService concurrency;
+        public SponsorRepository(DbService _db,ConcurrencyService concurrency)
         {
             this._db = _db;
+            this.concurrency = concurrency;
         }
 
 
@@ -50,7 +52,7 @@ namespace Concert.Infrastructure.Repository
             }
             sponsor.ConcertSponsorId = Guid.NewGuid();
             //Raw sql command to insert concertSponsor into the table
-            string commandText = "INSERT ConcertSponsor (ConcertSponsorId,ConcertId,SponsorId) VALUES (@ConcertSponsorId,@ConcertId,@SponsorId)";
+            string commandText = "INSERT ConcertSponsors (ConcertSponsorId,ConcertId,SponsorId) VALUES (@ConcertSponsorId,@ConcertId,@SponsorId)";
 
             List<SqlParameter> sqlParameters = GetConcertSponsorSqlParameters(sponsor);
             IEnumerable<object> parameters = sqlParameters;
@@ -73,7 +75,7 @@ namespace Concert.Infrastructure.Repository
 
             List<SqlParameter> sqlParameters = GetConcertSponsorSqlParameters(currentSponsor);
             _db.Database.ExecuteSqlRaw(commandText, sqlParameters);
-            Save();
+            concurrency.DbConcurreny<ConcertSponsor>();
 
             ConcertSponsor concertSponsor = await GetConcertSponsorById(currentSponsor.ConcertSponsorId);
             return concertSponsor;
@@ -110,7 +112,7 @@ namespace Concert.Infrastructure.Repository
             }
             sponsor.SponsorId = Guid.NewGuid();
             //Raw sql command to insert sponsor into the table
-            string commandText = "INSERT Sponsor (Name,SponsorLevel,SponsorId) VALUES (@SponsorLevel,@Name,@SponsorId)";
+            string commandText = "INSERT Sponsors (Name,SponsorLevel,SponsorId) VALUES (@Name,@SponsorLevel,@SponsorId)";
 
             List<SqlParameter> sqlParameters = GetSponsorSqlParameters(sponsor);
             IEnumerable<object> parameters = sqlParameters;
@@ -129,12 +131,11 @@ namespace Concert.Infrastructure.Repository
             Sponsor currentSponsor = await GetSponsor(sponsor.SponsorId);
             //copies updated properties from sponsor to currentSponsor
             _db.Entry(currentSponsor).CurrentValues.SetValues(sponsor);
-            string commandText = "UPDATE ConcertSponsors SET Name = @Name , SponsorLevel = @SponsorLevel Where SponsorId = @SponsorId";
+            string commandText = "UPDATE Sponsors SET Name = @Name , SponsorLevel = @SponsorLevel Where SponsorId = @SponsorId";
 
             List<SqlParameter> sqlParameters = GetSponsorSqlParameters(currentSponsor);
             _db.Database.ExecuteSqlRaw(commandText, sqlParameters);
-            Save();
-
+            concurrency.DbConcurreny<Sponsor>();
             Sponsor concertSponsor = await GetSponsor(currentSponsor.SponsorId);
             return concertSponsor;
         }
@@ -161,7 +162,7 @@ namespace Concert.Infrastructure.Repository
             {
                 throw new NullReferenceException(nameof(id));
             }
-            return await _db.Sponsors.FromSqlInterpolated($"Select * From Sponsors Where SponsorId = {id}").FirstOrDefaultAsync();
+            return await _db.Sponsors.FromSqlInterpolated($"Select * From Sponsors Where SponsorId = {id}").AsNoTracking().FirstOrDefaultAsync();
         }
         private void Save()
         {
@@ -175,13 +176,13 @@ namespace Concert.Infrastructure.Repository
             {
                 throw new NullReferenceException(nameof(sponsorId));
             }
-            return await _db.ConcertSponsors.FromSqlInterpolated($"Select * From dbo.ConcertSponsors Where SponsorId = {sponsorId}").FirstOrDefaultAsync();
+            return await _db.ConcertSponsors.FromSqlInterpolated($"Select * From dbo.ConcertSponsors Where ConcertSponsorId = {sponsorId}").AsNoTracking().FirstOrDefaultAsync();
         }
         private List<SqlParameter> GetConcertSponsorSqlParameters(ConcertSponsor sponsor)
         {
-            SqlParameter concertSponsorId = new SqlParameter("@ConcertName", sponsor.ConcertSponsorId);
+            SqlParameter concertSponsorId = new SqlParameter("@ConcertSponsorId", sponsor.ConcertSponsorId);
             SqlParameter concertId= new SqlParameter("@ConcertId", sponsor.ConcertId);
-            SqlParameter sponsorId = new SqlParameter("@ConcertAddress", sponsor.SponsorId);
+            SqlParameter sponsorId = new SqlParameter("@SponsorId", sponsor.SponsorId);
             List<SqlParameter> sqlParameters = new List<SqlParameter>
             {
                 concertSponsorId,
@@ -192,9 +193,9 @@ namespace Concert.Infrastructure.Repository
         }
         private List<SqlParameter> GetSponsorSqlParameters(Sponsor sponsor)
         {
-            SqlParameter level = new SqlParameter("@ConcertName", sponsor.SponsorLevel);
-            SqlParameter name = new SqlParameter("@ConcertId", sponsor.Name);
-            SqlParameter sponsorId = new SqlParameter("@ConcertAddress", sponsor.SponsorId);
+            SqlParameter level = new SqlParameter("@SponsorLevel", (int)sponsor.SponsorLevel);
+            SqlParameter name = new SqlParameter("@Name", sponsor.Name);
+            SqlParameter sponsorId = new SqlParameter("@SponsorId", sponsor.SponsorId);
             List<SqlParameter> sqlParameters = new List<SqlParameter>
             {
                 level,
