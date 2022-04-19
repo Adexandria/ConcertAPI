@@ -35,7 +35,7 @@ namespace Concert.Infrastructure.Repository
             }
 
             Guid concertId = GetTicketByConcertName(concertName);
-            return _db.Tickets.FromSqlInterpolated($"Select * From dbo.Tickets Where Price = {price}, ConcertId = {concertId}").OrderBy(s => s.TicketId);
+            return _db.Tickets.FromSqlInterpolated($"Select * From dbo.Tickets Where Price = {price}, ConcertId = {concertId}").Include(s=>s.Concert).AsNoTracking().OrderBy(s => s.TicketId);
         }
         
         public int AddTicket(Ticket ticket)
@@ -76,7 +76,7 @@ namespace Concert.Infrastructure.Repository
             }
             Ticket currentTicket = await GetTicketId(ticket.TicketId);
             _db.Entry(currentTicket).CurrentValues.SetValues(ticket);
-            string commandText = "UPDATE Organiser SET Package = @Package,ConcertId = @ConcertId,Price= @Price WHERE TicketId = @TicketId";
+            string commandText = "UPDATE Tickets SET Package = @Package,ConcertId = @ConcertId,Price= @Price WHERE TicketId = @TicketId";
 
             List<SqlParameter> sqlParameters = GetSqlParameters(currentTicket);
             _db.Database.ExecuteSqlRaw(commandText, sqlParameters);
@@ -99,7 +99,7 @@ namespace Concert.Infrastructure.Repository
             {
                 throw new NullReferenceException(nameof(ticketId));
             }
-            return await _db.Tickets.FromSqlInterpolated($"Select * From dbo.Tickets Where TicketId ={ticketId} ").FirstOrDefaultAsync();
+            return await _db.Tickets.FromSqlInterpolated($"Select * From dbo.Tickets Where TicketId ={ticketId} ").AsNoTracking().Include(s=>s.Concert).FirstOrDefaultAsync();
         } 
         private Guid GetTicketByConcertName(string concertName)
         {
