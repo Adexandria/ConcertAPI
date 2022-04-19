@@ -9,6 +9,7 @@ namespace Concert.Application.Interface
     public interface IArtist
     {
         //Artist
+        IEnumerable<Artist> GetArtist(string name);
         int AddArtist(Artist artist);
         Task<Artist> UpdateArtist(Artist artist);
         int DeleteArtist(Guid artistId);

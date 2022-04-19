@@ -18,6 +18,8 @@ namespace Concert.Infrastructure.Repository
             this._db = _db;
         }
 
+
+
         //Get All Concerts
         public IEnumerable<ConcertModel> GetConcerts
         {

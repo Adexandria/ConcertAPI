@@ -9,11 +9,11 @@ using Xunit;
 
 namespace Concert.Test
 {
-    public class UnitTest1
+    public class ConcertTest
     {
         readonly IConcert _concert;
         readonly DbService _db;
-        public UnitTest1()
+        public ConcertTest()
         {
             var optionsBuilder = new DbContextOptionsBuilder<DbService>();
             optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Database = Concert.Test;Integrated Security=True;Connect Timeout=30;");
@@ -60,7 +60,7 @@ namespace Concert.Test
         {
             Guid concertId = Guid.Parse("814d3792-b9b8-49ba-bef4-1e9754813d7d");
             int result = _concert.DeleteConcert(concertId);
-            Assert.Equal(1, result);
+            Assert.Equal(0, result);
 
         }
        

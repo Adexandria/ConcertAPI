@@ -60,6 +60,7 @@ namespace ConcertAPI
             services.AddScoped<EmailService>();
             services.AddScoped<IAuth, TwoFactorAuthService>();
             services.AddScoped<IConcert, ConcertRepository>();
+            services.AddScoped<ConcurrencyService>();
             services.AddAuthentication(options=>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
